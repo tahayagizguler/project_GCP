@@ -3,7 +3,6 @@
 
 ansible/mysql_user_credentials.yml
 
-
 # .tfstate files
 *.tfstate
 *.tfstate.*

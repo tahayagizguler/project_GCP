@@ -1,0 +1,60 @@
+---
+
+- name: Installing Mysql and dependencies
+  package:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  loop:
+    - default-mysql-server
+    # - mysql-client
+    - python3-mysqldb
+
+- name: start and enable mysql service
+  service:
+    name: mysql
+    state: started
+    enabled: yes
+
+- name: Include MySQL user credentials
+  include_vars: mysql_user_credentials.yml
+
+- name: creating mysql user
+  mysql_user:
+    name: "{{ mysql_user }}"
+    password: "{{ mysql_password }}"
+    priv: '*.*:ALL'
+    host: '%'
+    state: present
+  register: mysql_user_result
+
+- name: Print MySQL user creation result
+  debug:
+    var: mysql_user_result
+
+- name: creating db
+  mysql_db:
+    name: "root"
+    state: present
+  register: mysql_db_result
+
+- name: Print MySQL db creation result
+  debug:
+    var: mysql_db_result
+
+# - name: Enable remote login to mysql
+#   lineinfile:
+#     path: /etc/mysql/mysql.conf.d/mysqld.cnf
+#     regexp: '^bind-address'
+#     line: 'bind-address = 0.0.0.0'
+#     backup: yes
+#   notify:
+#     - Restart mysql
+
+# - name: Restart mysql
+#   service:
+#     name: mysql
+#     state: restarted
+#   when: "'Restart mysql' in ansible_run_tags"
+
+

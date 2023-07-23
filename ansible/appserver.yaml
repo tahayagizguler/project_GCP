@@ -1,0 +1,8 @@
+---
+- name: Install Nginx and PHP-FPM
+  hosts: all
+  remote_user: ansible
+  become: yes
+
+  roles:
+  - appserver

@@ -17,6 +17,12 @@ resource "google_compute_instance" "nginx1" {
         }
     }
 
+    metadata = {
+      "ssh-keys" = <<EOT
+        ansible:ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPYhKX9bahvEiR7JyhUmufgUy3kc6OmczHyEpX/w5rg5 ansible
+       EOT
+    }
+
     provisioner "remote-exec" {
         inline = ["echo 'Wait until SSH is ready'"]
 
@@ -53,8 +59,15 @@ resource "google_compute_instance" "nginx2" {
         }
     }
 
+    metadata = {
+      "ssh-keys" = <<EOT
+        ansible:ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPYhKX9bahvEiR7JyhUmufgUy3kc6OmczHyEpX/w5rg5 ansible
+       EOT
+    }
+
+
     provisioner "remote-exec" {
-        inline = ["echo 'Wait until SSH is ready'"]
+        inline = ["echo 'Wait until SSH is ready!'"]
 
         connection {
             type = "ssh"
@@ -69,14 +82,6 @@ resource "google_compute_instance" "nginx2" {
     } 
 }
 
-    # output "nginx_ip" {
-    #     value = {
-    #         for k, v in google_compute_instance.nginx : k => "http://${v.network_interface[0].access_config[0].nat_ip}"
-    #     }
-    # }
-    
-
-
 resource "google_compute_instance_group" "web_private_group" {
   name        = "vm-group"
   description = "Web servers instance group"
@@ -87,6 +92,12 @@ resource "google_compute_instance_group" "web_private_group" {
   ]
 }
 
+
+
+resource "google_compute_address" "static_ip" {
+  name = "mysql-static-ip"
+  region = var.region
+}
 
 resource "google_compute_instance" "mysql" {
   name = "mysql"
@@ -102,9 +113,18 @@ resource "google_compute_instance" "mysql" {
     network_interface {
         network = google_compute_network.vpc_network.id
         subnetwork = google_compute_subnetwork.mysql_server_subnet.id
+        network_ip = "10.0.2.2"
         access_config {
+            nat_ip = google_compute_address.static_ip.address
         }
     }
+
+    metadata = {
+      "ssh-keys" = <<EOT
+        ansible:ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPYhKX9bahvEiR7JyhUmufgUy3kc6OmczHyEpX/w5rg5 ansible
+       EOT
+    }
+
 
     provisioner "remote-exec" {
         inline = ["echo 'Wait until SSH is ready'"]
@@ -113,7 +133,7 @@ resource "google_compute_instance" "mysql" {
             type = "ssh"
             user = var.ssh_user
             private_key = file(var.private_key_path)
-            host = google_compute_instance.mysql.network_interface[0].access_config[0].nat_ip
+            host = google_compute_address.static_ip.address
         }
     }
 

@@ -42,19 +42,31 @@
   debug:
     var: mysql_db_result
 
-# - name: Enable remote login to mysql
-#   lineinfile:
-#     path: /etc/mysql/mysql.conf.d/mysqld.cnf
-#     regexp: '^bind-address'
-#     line: 'bind-address = 0.0.0.0'
-#     backup: yes
-#   notify:
-#     - Restart mysql
+- name: MySQL tablosu oluştur
+  mysql_query:
+    login_db: root
+    query: "CREATE TABLE my_table (id INT AUTO_INCREMENT PRIMARY KEY,title VARCHAR(255),description TEXT,due_date DATETIME);"
 
-# - name: Restart mysql
-#   service:
-#     name: mysql
-#     state: restarted
-#   when: "'Restart mysql' in ansible_run_tags"
+- name: Insert rows into MySQL table
+  mysql_query:
+    login_db: root
+    query: "INSERT INTO my_table (title, description, due_date) VALUES ('Buy milk', 'Buy milk at the grocery store', NOW()), ('Clean the house', 'Clean the house on Saturday', '2023-07-25 19:45:23');"
+
+- name: Restart MySQL service
+  service:
+    name: mysql
+    state: restarted
 
 
+- name: Enable remote login to mysql
+  lineinfile:
+    path: /etc/mysql/mariadb.conf.d/50-server.cnf
+    regexp: '^bind-address'
+    line: 'bind-address = 0.0.0.0'
+    backup: yes
+
+
+- name: Restart mysql
+  service:
+    name: mysql
+    state: restarted

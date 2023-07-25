@@ -1,7 +1,7 @@
 variable "project_id" {
   description = "GCP project ID"
   type        = string
-  default     = "jotforminternproject"
+  default     = "devops-interns" # jotforminternproject  
 }
 
 variable "ssh_user" {
@@ -18,12 +18,12 @@ variable "private_key_path" {
 
 variable "region" {
   description = "Google Cloud region for the resources"
-  default     = "us-central1"
+  default     = "europe-central2"
 }
 
 variable "zone" {
   description = "Google Cloud zone for the resources"
-  default     = "us-central1-c"
+  default     = "europe-central2-a"
 }
 
 

@@ -5,4 +5,7 @@
   become: yes
 
   roles:
-  - appserver_2
+  - appserver
+
+  vars:
+    copy_blue_html_file: true

@@ -6,3 +6,6 @@
 
   roles:
   - appserver
+
+  vars:
+    copy_blue_html_file: false

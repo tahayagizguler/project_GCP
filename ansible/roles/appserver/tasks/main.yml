@@ -12,7 +12,7 @@
 
 - name: Start and enable PHP-FPM service
   service:
-    name: php7.4-fpm 
+    name: php7.4-fpm # 
     state: started
     enabled: true
 
@@ -27,4 +27,41 @@
 - name: Copy Green HTML File
   copy:
       src: /home/altron/GCPProject/index/green.php
-      dest: /var/www/html/index.nginx-debian.html
+      dest: /var/www/html/index.php
+  when: not copy_blue_html_file
+
+- name: Copy Blue HTML File
+  copy:
+      src: /home/altron/GCPProject/index/blue.php
+      dest: /var/www/html/index.php #index.nginx-debian.html
+  when: copy_blue_html_file
+
+
+- name: Copy PHP info page
+  copy:
+    src: /home/altron/GCPProject/index/info.php
+    dest: /var/www/html/info.php
+
+
+- name: Copy Nginx default site configuration
+  template:
+      src: /home/altron/GCPProject/index/nginx.conf.j2
+      dest: /etc/nginx/sites-available/default
+
+- name: Enable Nginx default site
+  file:
+    src: /etc/nginx/sites-available/default
+    dest: /etc/nginx/sites-enabled/default
+    state: link
+  notify:
+      - restart nginx
+
+- name: restart nginx
+  service:
+      name: nginx
+      state: restarted
+
+- name: restart PHP-FPM
+  service:
+      name: php7.4-fpm
+      state: restarted

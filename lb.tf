@@ -1,5 +1,5 @@
 
-resource "google_compute_health_check" "healthcheck" {
+resource "google_compute_health_check" "healthcheck" { 
   name = "healthcheck"
   timeout_sec = 1
   check_interval_sec = 1

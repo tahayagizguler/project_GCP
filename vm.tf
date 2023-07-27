@@ -101,12 +101,12 @@ resource "google_compute_address" "static_ip" {
 
 resource "google_compute_instance" "mysql" {
   name = "mysql"
-  machine_type = var.machine_type #ubuntu-os-cloud/ubuntu-2004-lts
+  machine_type = var.machine_type 
   zone = var.zone
 
     boot_disk {
         initialize_params {
-        image = var.image
+        image = var.image #ubuntu-os-cloud/ubuntu-2004-lts
         }
     } 
 
@@ -139,5 +139,45 @@ resource "google_compute_instance" "mysql" {
 
     provisioner "local-exec" {
         command = "ansible-playbook -i ${google_compute_instance.mysql.network_interface[0].access_config[0].nat_ip}, --private-key ${var.private_key_path} ${local.ansible.mysqlserver} --vault-password-file ${local.ansible.vault_pass}"
+    } 
+}
+
+resource "google_compute_instance" "jenkins" {
+  name = "jenkins"
+  machine_type = "e2-medium"  # e2.medium
+  zone = var.zone
+
+    boot_disk {
+        initialize_params {
+        image = "ubuntu-os-cloud/ubuntu-2004-lts"
+        }
+    } 
+
+    network_interface {
+        network = google_compute_network.vpc_network_cicd.id
+        subnetwork = google_compute_subnetwork.server_subnet.id
+        access_config {
+        }
+    }
+
+    metadata = {
+      "ssh-keys" = <<EOT
+        ansible:ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPYhKX9bahvEiR7JyhUmufgUy3kc6OmczHyEpX/w5rg5 ansible
+       EOT
+    }
+
+    provisioner "remote-exec" {
+        inline = ["echo 'Wait until SSH is ready'"]
+
+        connection {
+            type = "ssh"
+            user = var.ssh_user
+            private_key = file(var.private_key_path)
+            host = google_compute_instance.jenkins.network_interface[0].access_config[0].nat_ip
+        }
+    }
+
+    provisioner "local-exec" {
+        command = "ansible-playbook -i ${google_compute_instance.jenkins.network_interface[0].access_config[0].nat_ip}, --private-key ${var.private_key_path} ${local.ansible.jenkins}"
     } 
 }

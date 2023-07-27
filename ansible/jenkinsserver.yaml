@@ -1,0 +1,14 @@
+---
+- name: Install Nginx and PHP-FPM
+  hosts: all
+  remote_user: ansible
+  become: yes
+  vars:
+    jenkins_home: /var/lib/jenkins
+    jenkins_port: 8080
+    jenkins_user: jenkins
+    jenkins_group: jenkins
+
+
+  roles:
+  - jenkins

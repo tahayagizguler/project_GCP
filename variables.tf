@@ -36,7 +36,3 @@ variable "image" {
   description = "Google Cloud image for the instances"
   default     = "debian-cloud/debian-11"
 }
-
-variable "VAULT_PASS" {
-  type    = string
-}

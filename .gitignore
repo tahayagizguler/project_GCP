@@ -2,7 +2,7 @@
 **/.terraform/*
 
 ansible/mysql_user_credentials.yml
-
+ansible/jenkins_credentials.yml
 # .tfstate files
 *.tfstate
 *.tfstate.*

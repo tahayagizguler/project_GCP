@@ -1,5 +1,5 @@
 ---
-- name: Install Nginx and PHP-FPM
+- name: Install Jenkins
   hosts: all
   remote_user: ansible
   become: yes

@@ -1,49 +1,3 @@
-# # # ---
-#   - name: Download Long Term Jenkins release
-#     get_url:
-#       url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
-#       dest: /etc/yum.repos.d/jenkins.repo
-
-#   - name: Import jenkins key from url
-#     ansible.builtin.rpm_key:
-#       state: present
-#       key: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
-
-#   # - name: yum update
-#   #   yum:
-#   #     name: '*'
-#   #     state: latest
-
-#   - name: Install wget
-#     yum:
-#       name: wget
-#       state: present
-
-#   - name: Install java
-#     yum:
-#       name: java-11-openjdk
-#       state: present
-
-#   - name: Install jenkins
-#     yum:
-#       name: jenkins
-#       state: latest
-
-#   - name: daemon-reload to pick up config changes
-#     ansible.builtin.systemd:
-#       daemon_reload: yes
-
-#   - name: Start jenkins
-#     ansible.builtin.systemd:
-#       name: jenkins
-#       state: started
-
-
-#   - name: Install java
-#     yum:
-#       name: java-11-openjdk
-#       state: present
-
 ---
     - name: Install Java
       apt:
@@ -84,3 +38,33 @@
     #     src: "/var/lib/jenkins/secrets/initialAdminPassword"
     #     dest: "./"
     #     flat: yes
+
+    - name: Include Jenkins credentials
+      include_vars: jenkins_credentials.yml
+
+    - name: Set GIT_TOKEN variable
+      set_fact:
+        GIT_TOKEN: "{{ git_token }}"
+
+    - name: Set Git global credentials helper
+      shell: git config --global credential.helper "store --file=~/.git-credentials"
+      environment:
+        MY_GIT_TOKEN: "{{ GIT_TOKEN }}"
+      register: git_config_result
+      changed_when: false
+
+    - name: Store Git credentials
+      copy:
+        content: "https://{{ git_username }}:${GIT_TOKEN}@github.com"
+        dest: ~/.git-credentials
+        mode: "0600"
+      when: git_config_result.rc == 0
+
+    - name: Publish Jenkins pipeline job
+      jenkins_job:
+        name: SamplePipeline
+        config: "{{ lookup('file', '/home/altron/GCPProject/pipeline_config.xml') }}"
+        url: http://localhost:8080  
+        user: "{{ jenkins_user }}"
+        password: "{{ jenkins_api_token }}" 
+        state: present

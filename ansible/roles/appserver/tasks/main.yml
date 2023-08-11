@@ -65,3 +65,10 @@
   service:
       name: php7.4-fpm
       state: restarted
+
+- name: Change ownership of /var/www/html to ansible user
+  file:
+    path: /var/www/html
+    owner: ansible
+    group: ansible
+    state: directory
